@@ -23,16 +23,16 @@ UKF::UKF() {
   P_ << 1, 0, 0, 0, 0,
         0, 1, 0, 0, 0,
         0, 0, 1, 0, 0,
-        0, 0, 0, 1, 0,
-        0, 0, 0, 0, 1;
+        0, 0, 0, 0.0225, 0,
+        0, 0, 0, 0, 0.0225;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   // std_a_ = 30;
-   std_a_ = 5;
+   std_a_ = 2.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
   // std_yawdd_ = 30;
-   std_yawdd_ = 0.8;
+   std_yawdd_ = 1.0;
   
   /**
    * DO NOT MODIFY measurement noise values below.
@@ -126,15 +126,15 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
         double vy      = rho_dot * sin(phi);
         double v       = sqrt(vx * vx + vy * vy);
 
-        x_ << x , y, v, 0, 0;
-
+        x_ << x , y, v, rho, rho_dot;
     }
     else if(meas_package.sensor_type_ == MeasurementPackage::LASER)
     {
-      x_<< meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], 0, 0, 0;
+      x_<< meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), 0, 0, 0;        
     }
     
     is_initialized_ = true;
+    time_us_ = meas_package.timestamp_;
     return;
   }
 
