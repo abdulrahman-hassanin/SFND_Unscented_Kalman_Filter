@@ -186,45 +186,28 @@ void UKF::Prediction(double delta_t) {
   */ 
 
   // predict sigma points
-  for (int i = 0; i< 2*n_aug_+1; ++i) {
-    // extract values for better readability
-    double p_x      = Xsig_aug(0,i);
-    double p_y      = Xsig_aug(1,i);
-    double v        = Xsig_aug(2,i);
-    double yaw      = Xsig_aug(3,i);
-    double yawd     = Xsig_aug(4,i);
-    double nu_a     = Xsig_aug(5,i);
-    double nu_yawdd = Xsig_aug(6,i);
+  for(int i=0; i<2*n_aug_+1; i++){
+    // Xsig_pred.col(i) = Xsig_aug.col(i).head(5);
+    double px = Xsig_aug(0, i);
+    double py = Xsig_aug(1, i);
+    double vk = Xsig_aug(2, i);
+    double yawk = Xsig_aug(3, i);
+    double yawdotk = Xsig_aug(4, i);
+    double miua = Xsig_aug(5, i);
+    double miuyaw = Xsig_aug(6, i);
 
-    // predicted state values
-    double px_p, py_p, v_p, yaw_p, yawd_p;
-
-    // avoid division by zero
-    if (fabs(yawd) > 0.001) {
-        px_p = p_x + v/yawd * ( sin (yaw + yawd*delta_t) - sin(yaw));
-        py_p = p_y + v/yawd * (-cos (yaw + yawd*delta_t) + cos(yaw));
-    } else {
-        px_p = p_x + v*delta_t*cos(yaw);
-        py_p = p_y + v*delta_t*sin(yaw);
+    if(fabs(yawdotk) <0.001){
+      Xsig_pred_(0, i) = px + (vk * cos(yawk) * delta_t) + (0.5 * delta_t*delta_t*cos(yawk)*miua);  
+      Xsig_pred_(1, i) = py + (vk * sin(yawk) * delta_t) + (0.5 * delta_t*delta_t*sin(yawk)*miua);  
+    }else{
+      Xsig_pred_(0, i) = px + vk/yawdotk * ( sin (yawk + yawdotk*delta_t) - sin(yawk)) + (0.5 * delta_t*delta_t*cos(yawk)*miua);  
+      Xsig_pred_(1, i) = py + vk/yawdotk * ( cos(yawk) - cos(yawk+yawdotk*delta_t) ) + (0.5 * delta_t*delta_t*sin(yawk)*miua);   
     }
-
-    v_p = v;
-    yaw_p = yaw + yawd*delta_t;
-    yawd_p = yawd;
-
-    // add noise
-    px_p   = px_p   + 0.5*nu_a*delta_t*delta_t * cos(yaw);
-    py_p   = py_p   + 0.5*nu_a*delta_t*delta_t * sin(yaw);
-    v_p    = v_p    + nu_a*delta_t;
-    yaw_p  = yaw_p  + 0.5*nu_yawdd*delta_t*delta_t;
-    yawd_p = yawd_p + nu_yawdd*delta_t;
-
-    Xsig_pred_(0,i) = px_p;
-    Xsig_pred_(1,i) = py_p;
-    Xsig_pred_(2,i) = v_p;
-    Xsig_pred_(3,i) = yaw_p;
-    Xsig_pred_(4,i) = yawd_p;
+    Xsig_pred_(2, i) = vk + delta_t * miua;
+    Xsig_pred_(3, i) = yawk + 0.5 * delta_t * delta_t * miuyaw;
+    Xsig_pred_(4, i) = yawdotk + delta_t * miuyaw;  
   }
+
 
   /**
    * Predict mean anf covariance
