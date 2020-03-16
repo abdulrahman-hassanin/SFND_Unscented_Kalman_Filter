@@ -27,7 +27,7 @@ UKF::UKF() {
 
   // Process noise standard deviation yaw acceleration in rad/s^2
   // std_yawdd_ = 30;
-   std_yawdd_ = 1.0;
+   std_yawdd_ = 1.5;
   
   /**
    * DO NOT MODIFY measurement noise values below.
@@ -70,8 +70,8 @@ UKF::UKF() {
   lambda_ = 3 - n_x_;
   
   P_ = MatrixXd::Identity(n_x_, n_x_);
-  P_(3,3)= 0.0023;
-  P_(4,4)= 0.0023;
+  //P_(3,3)= 0.0225;
+  //P_(4,4)= 0.0225;
 
   // Intialize the weights
   weights_ = VectorXd(2*n_aug_+1);
@@ -329,7 +329,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     yawd  = Xsig_pred_(4, i);
 
     v1 = v*cos(yaw);
-    v1 = v*sin(yaw);
+    v2 = v*sin(yaw);
 
     Zsig(0, i) = sqrt(p_x*p_x + p_y*p_y);                         //r
     Zsig(1, i) = atan2(p_y, p_x);                                 //phi
@@ -338,7 +338,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   // predicted measurment mean and covariance
   Z_pred.fill(0.0);
-  for (int i = 0; i < 2*n_aug_; i++)
+  for (int i = 0; i < 2*n_aug_+1; i++)
   {
     Z_pred = Z_pred + weights_(i) * Zsig.col(i);
   }
