@@ -70,8 +70,6 @@ UKF::UKF() {
   lambda_ = 3 - n_x_;
   
   P_ = MatrixXd::Identity(n_x_, n_x_);
-  //P_(3,3)= 0.0225;
-  //P_(4,4)= 0.0225;
 
   // Intialize the weights
   weights_ = VectorXd(2*n_aug_+1);
@@ -106,10 +104,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   { 
     if(meas_package.sensor_type_ == meas_package.LASER && use_laser_){
       x_ << meas_package.raw_measurements_[0], 
-              meas_package.raw_measurements_[1], 
-              0,
-              0, 
-              0;
+            meas_package.raw_measurements_[1], 
+            0,
+            0, 
+            0;
     }else if(meas_package.sensor_type_ == meas_package.RADAR && use_radar_){
       double rho = meas_package.raw_measurements_[0];
       double phi = meas_package.raw_measurements_[1];
@@ -187,7 +185,7 @@ void UKF::Prediction(double delta_t) {
 
   // predict sigma points
   for(int i=0; i<2*n_aug_+1; i++){
-    // Xsig_pred.col(i) = Xsig_aug.col(i).head(5);
+    
     double px = Xsig_aug(0, i);
     double py = Xsig_aug(1, i);
     double vk = Xsig_aug(2, i);
